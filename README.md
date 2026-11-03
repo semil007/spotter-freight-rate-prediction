@@ -16,7 +16,8 @@ A machine learning system for predicting truckload freight shipment rates. Built
 8. [Prediction and Inference](#8-prediction-and-inference)
 9. [Installation and Usage](#9-installation-and-usage)
 10. [Output Validation](#10-output-validation)
-11. [Conclusion](#11-conclusion)
+11. [October Prediction Charts](#11-october-prediction-charts)
+12. [Conclusion](#12-conclusion)
 
 ---
 
@@ -541,7 +542,37 @@ Passing the scorer confirms that both files are correctly formatted and structur
 
 ---
 
-## 11. Conclusion
+## 11. October Prediction Charts
+
+Run to generate three charts from the October validation results:
+
+```powershell
+python src/plot_october.py
+```
+
+Charts are saved to `reports/`:
+
+**Actual vs predicted scatter**
+
+Points clustered along the perfect prediction line across the $0-$4,000 range. Shipments above $6,000 are excluded from the scatter to keep the main distribution readable.
+
+![Actual vs Predicted](reports/october_actual_vs_predicted.png)
+
+**Daily average rate**
+
+Tracks how well the model follows day-to-day rate movement across October.
+
+![Daily Average](reports/october_daily_avg.png)
+
+**Error distribution**
+
+Centered close to zero (median error -$12). 83.8% of predictions land within $100 of actual, 96.9% within $250. The right tail reflects the small number of high-value shipments the model underpredicts.
+
+![Error Distribution](reports/october_error_distribution.png)
+
+---
+
+## 12. Conclusion
 
 This project delivers a production-ready freight rate prediction model trained on 48,000 historical shipments using CatBoost regression.
 
