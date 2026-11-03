@@ -1,0 +1,9 @@
+{
+    "mae": 115.17659676404361,
+    "rmse": 647.7980233216477,
+    "r2": 0.8203959074574053,
+    "best_iteration": 553,
+    "selected_iterations": 554,
+    "high_value_count": 12,
+    "high_value_mae": 10469.079237304302
+}
