@@ -8,16 +8,17 @@ A machine learning system for predicting truckload freight shipment rates. Built
 
 1. [Project Overview](#1-project-overview)
 2. [Dataset Understanding](#2-dataset-understanding)
-3. [Feature Engineering](#3-feature-engineering)
-4. [Validation Strategy](#4-validation-strategy)
-5. [Model Experimentation and Selection](#5-model-experimentation-and-selection)
-6. [Error Analysis and Limitations](#6-error-analysis-and-limitations)
-7. [Final Model Training](#7-final-model-training)
-8. [Prediction and Inference](#8-prediction-and-inference)
-9. [Installation and Usage](#9-installation-and-usage)
-10. [Output Validation](#10-output-validation)
-11. [October Prediction Charts](#11-october-prediction-charts)
-12. [Conclusion](#12-conclusion)
+3. [Exploratory Data Analysis](#3-exploratory-data-analysis)
+4. [Feature Engineering](#4-feature-engineering)
+5. [Validation Strategy](#5-validation-strategy)
+6. [Model Experimentation and Selection](#6-model-experimentation-and-selection)
+7. [Error Analysis and Limitations](#7-error-analysis-and-limitations)
+8. [Final Model Training](#8-final-model-training)
+9. [Prediction and Inference](#9-prediction-and-inference)
+10. [Installation and Usage](#10-installation-and-usage)
+11. [Output Validation](#11-output-validation)
+12. [October Prediction Charts](#12-october-prediction-charts)
+13. [Conclusion](#13-conclusion)
 
 ---
 
@@ -148,7 +149,35 @@ The task is to predict how the rate for this specific lane changes day by day ac
 
 ---
 
-## 3. Feature Engineering
+## 3. Exploratory Data Analysis
+
+**Freight rate distribution**
+
+The target is right-skewed. Most shipments price below $3,000 with a long tail of rare high-value loads.
+
+![Rate Distribution](reports/eda/plot_01.png)
+
+**Distance vs freight rate**
+
+Distance is the strongest predictor with a correlation of 0.91. The relationship is broadly linear but with significant spread — same-distance routes can price very differently depending on lane demand.
+
+![Distance vs Rate](reports/eda/plot_02.png)
+
+**Rate by equipment type**
+
+Reefer and Flatbed price higher on average than Dry Van and show more variance.
+
+![Rate by Equipment](reports/eda/plot_03.png)
+
+**Correlation matrix**
+
+Distance dominates. Market index and quote signal have near-zero correlation with the target.
+
+![Correlation](reports/eda/plot_04.png)
+
+---
+
+## 4. Feature Engineering
 
 All feature engineering is implemented in `src/feature_engineering.py`. The same pipeline runs identically during training, validation, and December inference - this is enforced by the shared `prepare_features()` function, which returns a fixed-order 15-column DataFrame validated against `MODEL_FEATURES`.
 
@@ -211,7 +240,7 @@ CatBoost handles missing numeric values natively without imputation. `weight` is
 
 ---
 
-## 4. Validation Strategy
+## 5. Validation Strategy
 
 ### Why chronological splitting
 
@@ -244,7 +273,7 @@ The distance-only baseline is a meaningful reference point because distance acco
 
 ---
 
-## 5. Model Experimentation and Selection
+## 6. Model Experimentation and Selection
 
 All experiments used the same chronological split: January-September training, October validation. October was the primary model-selection window — every experiment result table in this section reflects performance on October. This means October is not a fully independent holdout; it was used to compare and select between configurations. Once the final configuration was chosen, the model was retrained on all 48,000 records including October before generating the submission predictions.
 
@@ -298,7 +327,7 @@ Adding explicit route-level historical statistics did not improve over the basel
 
 ---
 
-## 6. Error Analysis and Limitations
+## 7. Error Analysis and Limitations
 
 ### Equipment-wise performance (October)
 
@@ -337,7 +366,7 @@ The overall MAE of $115.18 understates the model's difficulty with extreme rates
 
 ---
 
-## 7. Final Model Training
+## 8. Final Model Training
 
 After completing all experiments and confirming the original 15-feature CatBoost configuration as the best model, the final model was retrained on all 48,000 labeled records (January-October 2025).
 
@@ -363,7 +392,7 @@ The iteration count (554) is read from `reports/experiment_metrics.json`, which 
 
 ---
 
-## 8. Prediction and Inference
+## 9. Prediction and Inference
 
 `src/predict.py` loads the saved final model and generates predictions for both required outputs.
 
@@ -390,7 +419,7 @@ The December range is narrow because the route, equipment, distance, and weight 
 
 ---
 
-## 9. Installation and Usage
+## 10. Installation and Usage
 
 ### Requirements
 
@@ -512,7 +541,7 @@ The scorer expects `load_id,predicted_rate` with no extra columns and no index c
 
 ---
 
-## 10. Output Validation
+## 11. Output Validation
 
 The official scorer (`score.py`) validates both output files before generating the December chart.
 
@@ -542,7 +571,7 @@ Passing the scorer confirms that both files are correctly formatted and structur
 
 ---
 
-## 11. October Prediction Charts
+## 12. October Prediction Charts
 
 Run to generate three charts from the October validation results:
 
@@ -572,7 +601,7 @@ Centered close to zero (median error -$12). 83.8% of predictions land within $10
 
 ---
 
-## 12. Conclusion
+## 13. Conclusion
 
 This project delivers a production-ready freight rate prediction model trained on 48,000 historical shipments using CatBoost regression.
 
@@ -583,6 +612,8 @@ Across four chronological windows, the CatBoost model achieved an average MAE of
 The primary known limitation is underprediction of rare high-value shipments (above $10,000). These represent 0.215% of the training data, and their sparse occurrence limits what any supervised model trained on this dataset can learn about them without additional data.
 
 Both required prediction files have been generated and verified against the official scorer. The full experiment log is preserved in `reports/` to document that model selection was based on measured validation performance.
+
+![December Predictions](scorer_results/candidate_december.png)
 
 **Potential future improvements:**
 
