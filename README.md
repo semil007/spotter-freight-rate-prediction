@@ -202,7 +202,7 @@ Both `day_sin` and `day_cos` together are retained because neither alone capture
 
 ### Categorical feature handling
 
-CatBoost handles categorical features natively using ordered target statistics (a form of target encoding computed on a random permutation of the training set). This prevents target leakage within the training data. All categorical columns are cast to strings before being passed to the model. Missing categorical values are replaced with the sentinel string `"__MISSING__"`.
+CatBoost has two related but distinct mechanisms for handling categoricals. The ordered categorical statistics compute target-based encodings using a random permutation of training records, so each record's encoding only sees records that appear earlier in the permutation. This prevents within-batch target leakage during training. Ordered boosting is a separate mechanism that builds trees on a held-out subset to reduce overfitting. Both use the same ordered principle but operate at different levels of the algorithm. All categorical columns are cast to strings before being passed to the model. Missing categorical values are replaced with the sentinel string `"__MISSING__"`.
 
 ### Missing numeric values
 
@@ -245,7 +245,7 @@ The distance-only baseline is a meaningful reference point because distance acco
 
 ## 5. Model Experimentation and Selection
 
-All experiments used the same chronological train-October validation split (January-September training, October validation) unless stated otherwise. No experiment used October labels to make modelling decisions until after model selection was complete.
+All experiments used the same chronological split: January-September training, October validation. October was the primary model-selection window — every experiment result table in this section reflects performance on October. This means October is not a fully independent holdout; it was used to compare and select between configurations. Once the final configuration was chosen, the model was retrained on all 48,000 records including October before generating the submission predictions.
 
 ### Experiments conducted
 
@@ -396,15 +396,15 @@ The December range is narrow because the route, equipment, distance, and weight 
 - Python 3.10 or later
 - Windows PowerShell (commands below are tested on Windows)
 
-The `requirements.txt` specifies:
+The `requirements.txt` specifies all dependencies:
 
 ```
+catboost>=1.2,<2
 matplotlib>=3.8,<4
 numpy>=1.26,<3
 pandas>=2.0,<3
+scikit-learn>=1.3,<2
 ```
-
-CatBoost and scikit-learn are used in the project but must be installed separately (they are not pinned in `requirements.txt`). Install them alongside the listed packages.
 
 ### Setup
 
@@ -413,7 +413,6 @@ python -m venv venv
 venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
-python -m pip install catboost scikit-learn
 ```
 
 ### Run the October experiment (optional - regenerates metrics and experiment model)
